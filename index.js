@@ -35,6 +35,7 @@ app.post('/', function(req,res){
             if(myData[i].password == password){
                 console.log('foundPassword');
                 process.env.ACTIVE_USER = username;
+                console.log(TodoTask.find({content: 'as'}));
                 TodoTask.find({owner: username}, function(err, tasks){
                     res.render("todo.ejs", { todoTasks: tasks });
                 });
