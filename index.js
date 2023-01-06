@@ -61,8 +61,6 @@ app.post('/', function(req,res){
     var file = fs.readFileSync('./tasks.json');
     var jsonObject = JSON.parse(file);
     res.json(jsonObject);
-    
-    res.redirect("/");
 });
 
 //view done only
@@ -79,4 +77,52 @@ app.route("/all").get((req, res) => {
     TodoTask.find({owner: process.env.ACTIVE_USER}, (err, tasks) => {
         res.render("todo.ejs", { todoTasks: tasks });
         });
+});
+
+//rewrite
+app.route("/edit/:id")
+    .get((req, res) => {
+    const id = req.params.id;
+    TodoTask.find({}, (err, tasks) => {
+    res.render("todoEdit.ejs", { todoTasks: tasks, idTask: id });
+    });
+    })
+    .post((req, res) => {
+    const id = req.params.id;
+    TodoTask.findByIdAndUpdate(id, { content: req.body.content, completed: req.body.completed }, err => {
+    if (err) return res.send(500, err);
+    res.redirect("/all");
+    });
+});
+
+//delete
+app.route("/remove/:id").get((req, res) => {
+    const id = req.params.id;
+    TodoTask.findByIdAndRemove(id, err => {
+    if (err) return res.send(500, err);
+    res.redirect("/all");
+    });
+}	);
+
+//add new task
+app.post('/all',async (req, res) => {
+    const todoTask = new TodoTask({
+    owner: process.env.ACTIVE_USER,
+    content: req.body.content
+    });
+    try {
+    await todoTask.save();
+    res.redirect("/all");
+    } catch (err) {
+    res.redirect("/all");
+    }
+});
+
+//mark as done
+app.route("/update/:id").get((req,res)=>{
+    TodoTask.updateOne({_id:req.params.id},{completed:!(req.body.completed)},(err)=>{
+        //console.log('completed: '+req.body.completed);
+        if(err) return res.send(500, err);
+        res.redirect("/all");
+    });
 });
