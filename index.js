@@ -5,8 +5,7 @@ const mongoose = require("mongoose");
 
 const PORT = process.env.PORT || 3000;
 
-
-const todo = require('./model/TodoTask');
+const TodoTask = require("./model/TodoTask");
 
 mongoose.set('strictQuery', true);
 dotenv.config();
@@ -19,10 +18,11 @@ mongoose.connect(process.env.DB_CONNECT, { useNewUrlParser: true }, () => {
 });
 
 app.set("view engine", "ejs");
-
+//view login
 app.get("/", async (req, res) => {
     res.render("login.ejs");
 });
+//login
 app.post('/', function(req,res){
     const fs = require('fs');
     var username = req.body.name;
@@ -34,10 +34,49 @@ app.post('/', function(req,res){
             console.log('found');
             if(myData[i].password == password){
                 console.log('foundPassword');
+                process.env.ACTIVE_USER = username;
+                TodoTask.find({owner: username}, function(err, tasks){
+                    res.render("todo.ejs", { todoTasks: tasks });
+                });
             }
             else(console.log('wrong password'));
         }
         else(console.log('no user found'));
     }
-    console.log(myData);
  });
+
+//json view
+ app.route("/jsonView").get((req, res) => {
+    var tasksJson;
+    const fs = require('fs')
+    TodoTask.find({}, (err, tasks) => {
+        const data = JSON.stringify(tasks);
+        fs.writeFile('tasks.json', data, (err) => {
+            if (err) {
+                throw err;
+            }
+            console.log("JSON data is saved.");
+        });
+    });
+    var file = fs.readFileSync('tasks.json');
+    var jsonObject = JSON.parse(file);
+    res.json(jsonObject);
+    
+    res.redirect("/");
+});
+
+//view done only
+app.route("/done").get((req, res) => {
+
+    TodoTask.find({owner: process.env.ACTIVE_USER ,completed:true}, (err, tasks) => {
+        res.render("todo.ejs", { todoTasks: tasks });
+        });
+});
+
+//view all
+app.route("/all").get((req, res) => {
+
+    TodoTask.find({owner: process.env.ACTIVE_USER}, (err, tasks) => {
+        res.render("todo.ejs", { todoTasks: tasks });
+        });
+});
