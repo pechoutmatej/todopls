@@ -59,7 +59,7 @@ app.post('/', function(req,res){
             console.log("JSON data is saved.");
         });
     });
-    var file = fs.readFileSync('./tasks.json');
+    var file = fs.readFileSync('tasks.json');
     var jsonObject = JSON.parse(file);
     res.json(jsonObject);
 });
