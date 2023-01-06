@@ -37,6 +37,7 @@ app.post('/', function(req,res){
                 process.env.ACTIVE_USER = username;
                 console.log(TodoTask.find({}));
                 TodoTask.find({owner: username}, function(err, tasks){
+                    if(err) console.log(err);
                     res.render("todo.ejs", { todoTasks: tasks });
                 });
             }
