@@ -37,6 +37,7 @@ app.post('/', function(req,res){
             }
             else(console.log('wrong password'));
         }
+        else(console.log('no user found'));
     }
     console.log(myData);
  });
